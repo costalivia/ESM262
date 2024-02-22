@@ -1,0 +1,4 @@
+## why you are taking this course?
+I am taking this course to have a general understanding of R in order to apply it to my research on deforestation in the Brazilian Amazon Region.
+## data science background
+I have a basic knowledge of Python, and this is my first time using R.
