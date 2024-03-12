@@ -1,0 +1,120 @@
+---
+title: "Assignment_3_autopower"
+author: "Livia Costa"
+date: "2024-03-12"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#Assignment 3
+#For this assignment you will write a new Rmarkdown document based on the analysis of power required for different possible_cars from looping.RMD; You will: Add an additional super light car with mass 5,000 kg and a surface area 10m2; compute the mean and maximum power for Cars A, B, C and for your new car, assuming that average highway speed is 80 km/hr with a standard deviation of 10km/hr; Use 2 different methods to compute the mean and maximum power for each car type; a) FOR loop and b) the pmap function from purr; create two boxplots (one for each method (FOR and pmap)) that show the range of power consumption (across sampled speeds) for each car type.
+
+4 car types 
+
+car A =  mass 20000 kg, area 22 m^2^
+
+car B = mass 65000 kg, area 30 m^2^
+
+car C = mass 38000 kg area 22 m^2^
+
+car D = mass 5000 kg area 10 m^2^
+
+Average highway speed: 80km/h
+Standard deviation: 10km/h
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Loading required packages 
+library(tidyverse)
+library(purrr) #for pmap
+
+# read R Code from the function 
+source("~/ESM262/R/autopower.R")
+# arrange parameters in a structured data frame
+possible_cars = data.frame(name = c("A","B","C","D"),mass=c(10000,65000,38000,5000), area = c(22,30,22,10))
+
+```
+# Assumptions
+
+Assume there are 150 cars on this highway each hour, they are travelling at a range of speeds - mean is 80km/hr and speeds have a standard deviation of 10km/hr as stated by the assignment. Speeds are log-normally distributed. 
+
+#Sampling
+```{r}
+#Sample size is 150 (a highway with 150 cars)
+nsample <- 150
+
+#Now, let's generate random speeds for the 150 cars and take into account the given average speed and standard deviation.
+
+#Method 1: pmap for repetition
+
+powerall_pmap <- pmap(list(A = possible_cars$area, m = possible_cars$mass), autopower, V = speeds)
+# Convert results into a data frame
+powerall_pmap <- as.data.frame(powerall_pmap, col.names = possible_cars$name)
+
+# Manipulate data for plotting: structuring data frame into a total of 1 row
+powerall_pmap <- powerall_pmap %>% pivot_longer(cols = everything(), names_to = "car", values_to = "power")
+
+# Method 2: For looping for repetition
+powerall_loop <- as.data.frame(matrix(nrow = length(speeds), ncol = nrow(possible_cars)), col.names = possible_cars$name)
+
+# Set up FOR loops
+for (i in 1:nrow(possible_cars)) {
+  powerall_loop[, i] <- autopower(A = possible_cars$area[i], m = possible_cars$mass[i], V = speeds)
+}
+
+colnames(powerall_loop) <- possible_cars$name
+
+# Pivot for plotting
+powerall_loop <- powerall_loop %>% pivot_longer(cols = everything(), names_to = "car", values_to = "power")
+
+# Add boxplots from above methods that show the range of power consumption across sampled speed for each car type
+# Boxplot for pmap
+pmap_plot <- ggplot(powerall_pmap, aes(car, power, fill = car)) + geom_boxplot() + ggtitle("Power Consumption with pmap")
+
+# Boxplot for looping
+looping_plot <- ggplot(powerall_loop, aes(car, power, fill = car)) + geom_boxplot() + ggtitle("Power Consumption with For Loop")
+
+# Side by side comparison
+ggarrange(pmap_plot, looping_plot)
+
+# Check for answers
+# Mean Power for all
+powerall_pmap %>% map(mean)  # Using pmap
+powerall_loop %>% map(mean)  # Using loop
+# Max Power for all
+Maxall_p <- powerall_pmap %>% map(max)  # Using pmap
+Maxall_l <- powerall_loop %>% map(max)  # Using loop
+
+Maxall_l
+Maxall_p
+
+# Max and Mean by types of car
+# Max and Mean Power for A
+A_mean <- mean(powerall_pmap$power[powerall_pmap$car == "A"], na.rm = TRUE)  # Results using pmap are the same as using loop
+A_max <- max(powerall_pmap$power[powerall_pmap$car == "A"], na.rm = TRUE)
+
+# Max and Mean Power for B
+B_mean <- mean(powerall_pmap$power[powerall_pmap$car == "B"], na.rm = TRUE)  # Results using pmap are the same as using loop
+B_max <- max(powerall_pmap$power[powerall_pmap$car == "B"], na.rm = TRUE)
+
+# Max and Mean Power for C
+C_mean <- mean(powerall_pmap$power[powerall_pmap$car == "C"], na.rm = TRUE)  # Results using pmap are the same as using loop
+C_max <- max(powerall_pmap$power[powerall_pmap$car == "C"], na.rm = TRUE)
+
+# Max and Mean Power for D
+D_mean <- mean(powerall_pmap$power[powerall_pmap$car == "D"], na.rm = TRUE)  # Results using pmap are the same as using loop
+D_max <- max(powerall_pmap$power[powerall_pmap$car == "D"], na.rm = TRUE)
+
+# Create a Dataframe to store final results
+Summary_Power <- data.frame(
+  Car_Type = c("A", "B", "C", "D"),
+  Mean_Power = c(A_mean, B_mean, C_mean, D_mean),
+  Max_Power = c(A_max, B_max, C_max, D_max)
+)
+
+# Display results
+Summary_Power
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
