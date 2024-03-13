@@ -1,0 +1,78 @@
+---
+title: "Assignment_5"
+author: "Livia Costa"
+date: "2024-03-13"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+#Write a function that takes a vector fish names and always returns three items: The most commmon fish, the rarest fish, the total number of fish.
+#' Fish catch data
+#'
+#' Data on a catch of fish from Santa Barbara
+#'
+#' @format A dataframe with 100 rows 1 column
+#' \itemize{
+#'   \item fish name
+#'   }
+#'@source \url{http://www.sblter.ed/}
+"fish"
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+source("../R/fish_analysis.R")
+
+```
+
+
+```{r}
+# Set working directory to the correct path
+setwd("/Users/lmcosta/ESM262/Data")
+
+# Check current working directory
+getwd()
+
+# Read the fish.txt file
+file_path <- "fish.txt"
+
+if (file.exists(file_path)) {
+  fish_data <- readLines(file_path)
+  
+  # Use the fish_analysis function
+  result <- fish_analysis(fish_data)
+  
+  # Display the results
+  cat("Most Common Fish:", result$most_common_fish, "\n")
+  cat("Rarest Fish:", result$rarest_fish, "\n")
+  cat("Total Number of Fish:", result$total_fish, "\n")
+} else {
+  stop("File not found: fish.txt")
+}
+```
+```{r}
+#Function to calculate fish summary
+fish_summary <- function(fish_vector) {
+  #Converting the vector to a data frame
+  fish_data <- data.frame(fish = fish_vector)
+  #Calculating the frequency of each fish species
+  fish_frequency <- table(fish_data$fish)
+  # Calculate the rarest and most common fish
+  rarefish <- names(which.min(fish_frequency))
+  commonfish <- names(which.max(fish_frequency))
+  
+  # Calculate the total number of fish
+  nfish <- length(fish_vector)
+  
+  # Return the results
+  result <- list(
+    rarefish = rarefish,
+    commonfish = commonfish,
+    nfish = nfish
+  )
+  
+  return(result)
+}
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
